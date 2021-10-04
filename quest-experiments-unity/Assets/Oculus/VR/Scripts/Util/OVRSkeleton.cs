@@ -14,6 +14,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public interface IBoneSetter
+{
+    void Initialize(IList<OVRBone> bones);
+    void SetBone(OVRSkeleton.BoneId boneId, ref Quaternion rot);
+}
+
+
 [DefaultExecutionOrder(-80)]
 public class OVRSkeleton : MonoBehaviour
 {
@@ -113,6 +120,13 @@ public class OVRSkeleton : MonoBehaviour
 	public SkeletonType GetSkeletonType() { return _skeletonType; }
 	public int SkeletonChangedCount { get; private set; }
 
+	private IBoneSetter _boneSetter;
+
+	public void SetBoneSetter(IBoneSetter setter)
+    {
+        _boneSetter = setter;
+    }
+
 	private void Awake()
 	{
 		if (_dataProvider == null)
@@ -129,9 +143,11 @@ public class OVRSkeleton : MonoBehaviour
 		_capsules = new List<OVRBoneCapsule>();
 		Capsules = _capsules.AsReadOnly();
 	}
-
+    GameObject _test;
 	private void Start()
 	{
+        _test = GameObject.Find("Obj1");
+
 		if (ShouldInitialize())
 		{
 			Initialize();
@@ -171,7 +187,9 @@ public class OVRSkeleton : MonoBehaviour
 			InitializeBindPose();
 			InitializeCapsules();
 
-			IsInitialized = true;
+            _boneSetter?.Initialize(_bones);
+
+            IsInitialized = true;
 		}
 	}
 
@@ -325,7 +343,10 @@ public class OVRSkeleton : MonoBehaviour
 			}
 		}
 	}
-
+    public static Quaternion AsWorldRot(in Quaternion localRotation, Transform parent)
+    {
+        return parent == null ? localRotation : parent.rotation * localRotation;
+    }
 	private void Update()
 	{
 #if UNITY_EDITOR
@@ -373,8 +394,12 @@ public class OVRSkeleton : MonoBehaviour
 				if (_bones[i].Transform != null)
 				{
 					if (_skeletonType == SkeletonType.HandLeft || _skeletonType == SkeletonType.HandRight)
-					{
-						_bones[i].Transform.localRotation = data.BoneRotations[i].FromFlippedXQuatf();
+                    {
+                        var rot = data.BoneRotations[i].FromFlippedXQuatf();
+
+                        _boneSetter?.SetBone(_bones[i].Id, ref rot);
+
+                        _bones[i].Transform.localRotation = rot;
 
 						if (_bones[i].Id == BoneId.Hand_WristRoot)
 						{
