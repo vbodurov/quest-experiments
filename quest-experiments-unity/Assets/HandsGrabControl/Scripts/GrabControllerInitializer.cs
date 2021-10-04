@@ -47,33 +47,15 @@ namespace OvrAltGrab
             aura.transform.localPosition = new Vector3(0, 0, 0);
             aura.transform.localRotation = Quaternion.identity;
 
-            var body = new GameObject("body_" + bone.Id);
-            body.transform.SetParent(bone.Transform);
-            body.transform.localPosition = new Vector3(0, 0, 0);
-            body.transform.localRotation = Quaternion.identity;
-
             var isPinky = bone.Id == OVRSkeleton.BoneId.Hand_Pinky3;
             var isThumb = bone.Id == OVRSkeleton.BoneId.Hand_Thumb3;
 
-            // body
-            var cc1 = body.AddComponent<CapsuleCollider>();
-            cc1.direction = 0;
-            cc1.center = isPinky ? new Vector3(-0.006f, 0, 0) : new Vector3(-0.008f, 0, 0);
-            cc1.height = 0.03f;
-            cc1.radius = isThumb ? 0.01f : 0.007f;
-            cc1.isTrigger = true;
-            var rb = body.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-
-            var fb = bone.Transform.gameObject.AddComponent<FingerBody>();
-            fb.SetTouchDetector(bone.Id, _detector);
-
             // aura
             var cc2 = aura.AddComponent<CapsuleCollider>();
-            cc2.direction = cc1.direction;
-            cc2.center = cc1.center;
-            cc2.height = cc1.height * 1.6f;
-            cc2.radius = cc1.radius * 1.6f;
+            cc2.direction = 0;
+            cc2.center = isPinky ? new Vector3(-0.006f, 0, 0) : new Vector3(-0.008f, 0, 0);
+            cc2.height = 0.048f;
+            cc2.radius = isThumb ? 0.016f : 0.0112f;
 
             var fa = aura.AddComponent<FingerAura>();
             fa.SetTouchDetector(bone.Id, _detector);

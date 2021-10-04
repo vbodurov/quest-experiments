@@ -15,6 +15,10 @@ namespace OvrAltGrab
         {
             _detector.OnAuraEnter(_id, other);
         }
+        void OnTriggerStay(Collider other)
+        {
+            _detector.OnAuraWithin(_id, other);
+        }
         void OnTriggerExit(Collider other)
         {
             _detector.OnAuraExit(_id, other);
